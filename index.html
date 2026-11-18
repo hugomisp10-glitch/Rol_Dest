@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Roleta do Destino</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Barlow:wght@400;600&display=swap">
+<style>
+:root{--bg:#1b3a8a;--ink:#f4efe0;--mut:#b9c6ee;--board:#0b1120;--tile:#1c2640;--tile2:#141b2e;--y:#ffc400;--ydk:#a87f00;--navy:#0c1a45;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d2159}}
+:root[data-theme="dark"]{--bg:#0d2159}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100vh;background:var(--bg) radial-gradient(circle,rgba(255,255,255,.09) 2px,transparent 3px) 0 0/28px 28px;color:var(--ink);font:400 16px/1.45 Barlow,system-ui,sans-serif}
+main{max-width:560px;margin:0 auto;padding:20px 14px 40px}
+h1{font:800 clamp(2.2rem,10vw,3.2rem)/.95 "Barlow Condensed","Arial Narrow",sans-serif;margin:0 0 6px}
+.sub{margin:0 0 16px;color:var(--mut)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.chips button{font:600 .95rem Barlow,sans-serif;color:var(--ink);background:transparent;border:2px solid var(--mut);border-radius:99px;padding:6px 12px;cursor:pointer}
+.chips button[aria-pressed="true"]{background:var(--y);border-color:var(--y);color:var(--navy)}
+.board{background:var(--board);border-radius:14px;padding:14px 10px;box-shadow:0 8px 0 rgba(0,0,0,.35)}
+.row{display:grid;grid-template-columns:repeat(16,1fr);gap:2px;margin-bottom:8px}
+.row:last-child{margin-bottom:0}
+.row i{font-style:normal;display:grid;place-items:center;aspect-ratio:.6;border-radius:3px;position:relative;background:linear-gradient(var(--tile) 50%,var(--tile2) 50%);font:800 clamp(1rem,5vw,1.8rem) "Barlow Condensed","Arial Narrow",sans-serif;color:var(--ink)}
+.row i::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:#000;opacity:.7}
+#r2 i{color:var(--y);font-size:clamp(.8rem,4vw,1.4rem)}
+.land i{animation:pulse .9s ease-out 1}
+@keyframes pulse{0%{filter:brightness(2.2)}100%{filter:none}}
+.meta{min-height:132px;margin:16px 0 8px}
+.meta .big{font-size:2.6rem;line-height:1;margin-right:8px;vertical-align:middle}
+.tag{display:inline-block;background:var(--ink);color:var(--navy);border-radius:99px;padding:3px 12px;font-weight:600;vertical-align:middle}
+.quote{font:600 1.35rem/1.25 Barlow,sans-serif;margin:10px 0 8px}
+.mission{margin:0;padding:10px 12px;background:rgba(0,0,0,.28);border-left:4px solid var(--y);border-radius:0 8px 8px 0}
+button.go{display:block;width:100%;font:800 2.1rem "Barlow Condensed","Arial Narrow",sans-serif;background:var(--y);color:var(--navy);border:0;border-radius:14px;padding:12px;box-shadow:0 6px 0 var(--ydk);cursor:pointer;margin:12px 0 14px}
+button.go:active:not(:disabled){transform:translateY(4px);box-shadow:0 2px 0 var(--ydk)}
+button:disabled{opacity:.55;cursor:default}
+.acts{display:flex;gap:10px}
+.acts button{flex:1;font:600 1rem Barlow,sans-serif;color:var(--ink);background:rgba(0,0,0,.28);border:2px solid var(--mut);border-radius:12px;padding:10px;cursor:pointer}
+#vm{min-height:1.5em;margin:10px 0;color:var(--y);font-weight:600}
+#hist{display:flex;flex-wrap:wrap;gap:6px;list-style:none;padding:0;margin:0 0 10px}
+#hist li{background:rgba(0,0,0,.28);border-radius:99px;padding:2px 10px;font-size:.9rem}
+#cnt{color:var(--mut);font-size:.9rem;margin:0}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--navy);padding:8px 16px;border-radius:99px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.on{opacity:1}
+button:focus-visible{outline:3px solid var(--y);outline-offset:2px}
+</style>
+</head>
+<body>
+<main>
+<h1>Roleta do Destino</h1>
+<p class="sub">Próximas férias, com saída de Portugal 🇵🇹. Ninguém escolhe, ninguém reclama.</p>
+<p class="sub"><a href="sugestor.html" style="color:var(--y);font-weight:600">🔎 Prefiro pedir ideias ao Destino →</a></p>
+<p class="sub"><a href="sorteio-amigos.html" style="color:var(--y);font-weight:600">🏆 Sorteio dos amigos: passa o telemóvel →</a></p>
+<p class="sub"><a href="mapa.html" style="color:var(--y);font-weight:600">🌍 Sorteio no mapa: o avião voa até ao destino →</a></p>
+<div class="chips" id="chips" role="group" aria-label="Tipo de destino"></div>
+<section class="board" aria-live="polite"><div class="row" id="r1"></div><div class="row" id="r2"></div></section>
+<div class="meta" id="meta"></div>
+<button class="go" id="go">SORTEAR</button>
+<div class="acts"><button id="veto" disabled>Vetar 🙅</button><button id="share" disabled>Partilhar 📲</button></div>
+<p id="vm"></p>
+<ul id="hist"></ul>
+<p id="cnt"></p>
+</main>
+<div id="toast" role="status"></div>
+<script src="destinos.js"></script>
+<script>
+const T={P:["Praia","🏖️"],C:["Cidade","🏙️"],N:["Natureza","🌿"],S:["Neve","⛷️"],K:["Cultura","🏛️"],E:["Exótico","🌴"]};
+const M=["Quem votar contra paga a primeira ronda.","Aprender 3 frases na língua local antes de partir.","O último a fazer a mala paga o jantar de despedida.","Foto de grupo obrigatória a imitar um turista clássico.","Quem chegar atrasado ao aeroporto paga os cafés.","Cada um leva um snack português na mala.","Proibido planear mais de uma coisa por dia.","Quem adormecer no voo é fotografado, sem recurso.","Cada um escolhe um prato local e ninguém troca.","A playlist do voo é feita por quem menos falou."];
+const V=["1.º veto. Os amigos tomam nota.","2 vetos. Já ninguém acredita em ti.","3 vetos. Vais pagar o primeiro jantar.","4 vetos. O grupo vota para te deixar em casa.","Chega. O destino já te mandou um aviso."];
+const $=s=>document.querySelector(s),COLS=16,rows=[$("#r1"),$("#r2")];
+const RM=matchMedia("(prefers-reduced-motion: reduce)").matches;
+let mode="*",drawn=new Set(),hist=[],vetos=0,cur=null,mis="",busy=false;
+rows.forEach(r=>{for(let i=0;i<COLS;i++)r.appendChild(document.createElement("i"))});
+const chips=$("#chips");
+[["*","Pura sorte 🎲"],...Object.entries(T).map(([k,v])=>[k,v[1]+" "+v[0]])].forEach(([k,l])=>{
+  const b=document.createElement("button");b.textContent=l;b.setAttribute("aria-pressed",k===mode);
+  b.onclick=()=>{mode=k;[...chips.children].forEach(x=>x.setAttribute("aria-pressed",x===b))};chips.appendChild(b)});
+const pad=s=>{s=s.toUpperCase().slice(0,COLS);return(" ".repeat(Math.floor((COLS-s.length)/2))+s).padEnd(COLS," ")};
+function show(a,anim){return new Promise(res=>{
+  const tiles=[...rows[0].children,...rows[1].children],tg=pad(a[0])+pad(a[1]),fin=(t,c)=>t.textContent=c===" "?"":c;
+  if(!anim||RM){tiles.forEach((t,i)=>fin(t,tg[i]));return res()}
+  const stop=tiles.map((_,i)=>700+(i%COLS)*80+(i>=COLS?250:0)+Math.random()*250),t0=performance.now(),A="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const iv=setInterval(()=>{const e=performance.now()-t0;let n=0;
+    tiles.forEach((t,i)=>{if(e>=stop[i]){fin(t,tg[i]);n++}else t.textContent=A[Math.random()*26|0]});
+    if(n===tiles.length){clearInterval(iv);res()}},55)})}
+function ui(){$("#go").disabled=busy;$("#veto").disabled=busy||!cur;$("#share").disabled=busy||!cur;
+  $("#cnt").textContent=drawn.size+" de "+D.length+" destinos já sorteados";
+  $("#hist").innerHTML=hist.slice(0,6).map(d=>"<li>"+d.n+" "+d.f+"</li>").join("")}
+async function draw(){
+  if(busy)return;busy=true;ui();
+  let pool=D.filter(d=>(mode==="*"||d.t===mode)&&!drawn.has(d.n));
+  if(!pool.length){D.filter(d=>mode==="*"||d.t===mode).forEach(d=>drawn.delete(d.n));pool=D.filter(d=>mode==="*"||d.t===mode)}
+  const d=pool[Math.random()*pool.length|0];cur=d;drawn.add(d.n);hist.unshift(d);mis=M[Math.random()*M.length|0];
+  $("#meta").innerHTML="";document.querySelector(".board").classList.remove("land");
+  await show([d.n,d.c],true);
+  $("#meta").innerHTML=`<span class="big">${d.f}</span><span class="tag">${T[d.t][1]} ${T[d.t][0]}</span><p class="quote">“${d.s}”</p><p class="mission"><b>Missão do grupo:</b> ${mis}</p>`;
+  document.querySelector(".board").classList.remove("land");void document.querySelector(".board").offsetWidth;document.querySelector(".board").classList.add("land");
+  busy=false;ui()}
+function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("on");setTimeout(()=>e.classList.remove("on"),1800)}
+$("#go").onclick=()=>{$("#vm").textContent="";draw()};
+$("#veto").onclick=()=>{if(busy||!cur)return;vetos++;$("#vm").textContent=V[Math.min(vetos,V.length)-1]+" (vetos gastos: "+vetos+")";draw()};
+$("#share").onclick=async()=>{
+  const d=cur,txt=`🎲 A Roleta do Destino decidiu: ${d.n} ${d.f} (${d.c})\n“${d.s}”\nMissão: ${mis}\nVetos gastos: ${vetos}. Já podem reclamar. ✈️`;
+  try{if(navigator.share){await navigator.share({text:txt});return}}catch(e){if(e&&e.name==="AbortError")return}
+  try{await navigator.clipboard.writeText(txt);toast("Copiado! Cola no grupo")}
+  catch(e){const a=document.createElement("textarea");a.value=txt;document.body.appendChild(a);a.select();
+    try{document.execCommand("copy");toast("Copiado! Cola no grupo")}catch(_){toast("Não deu para copiar")}a.remove()}};
+show(["Para onde","vamos?"],false);ui();
+</script>
+</body>
+</html>

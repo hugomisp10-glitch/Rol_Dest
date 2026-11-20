@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Painel da Viagem</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Barlow:wght@400;600&display=swap">
+<style>
+:root{--bg:#1b3a8a;--ink:#f4efe0;--mut:#b9c6ee;--y:#ffc400;--ydk:#a87f00;--navy:#0c1a45;--cf:"Barlow Condensed","Arial Narrow",sans-serif;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d2159}}
+:root[data-theme="dark"]{--bg:#0d2159}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100vh;background:var(--bg) radial-gradient(circle,rgba(255,255,255,.09) 2px,transparent 3px) 0 0/28px 28px;color:var(--ink);font:400 16px/1.45 Barlow,system-ui,sans-serif}
+main{max-width:560px;margin:0 auto;padding:20px 14px 50px}
+h1{font:800 clamp(2.2rem,10vw,3.2rem)/.95 var(--cf);margin:0 0 6px;text-transform:uppercase}
+h2{font:800 1.5rem var(--cf);color:var(--y);margin:26px 0 8px;text-transform:uppercase;letter-spacing:.04em}
+.sub{margin:0 0 14px;color:var(--mut)}
+a{color:var(--y);font-weight:600}
+input[type=text],input[type=date],input:not([type]){width:100%;font:400 1.05rem Barlow,sans-serif;padding:11px 12px;border-radius:12px;border:2px solid var(--mut);background:rgba(0,0,0,.35);color:var(--ink);margin:0 0 8px;color-scheme:dark}
+input:focus{outline:3px solid var(--y);border-color:var(--y)}
+label.ck{display:flex;gap:8px;align-items:center;margin:4px 0 10px}
+.btn{font:600 1rem Barlow,sans-serif;color:var(--ink);background:rgba(0,0,0,.35);border:2px solid var(--mut);border-radius:12px;padding:10px 14px;cursor:pointer}
+.btn.y{background:var(--y);color:var(--navy);border-color:var(--y)}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+#hero{margin-top:16px;padding:20px 14px;text-align:center;border-radius:18px;background:rgba(5,10,31,.7);border:3px solid var(--y);box-shadow:0 12px 40px rgba(0,0,0,.4)}
+#hero .big{font-size:5.5rem;line-height:1}
+#hero .nm{font:800 clamp(2.4rem,12vw,3.4rem)/.95 var(--cf);text-transform:uppercase;margin:4px 0}
+#hero .qm{animation:bob 1.3s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px) rotate(-5deg)}}
+#hero i{color:var(--mut);display:block;margin-bottom:8px}
+.cd{display:flex;justify-content:center;gap:8px;margin:10px 0}
+.cd div{min-width:64px;padding:8px 4px;border-radius:12px;background:rgba(255,255,255,.1)}
+.cd b{display:block;font:800 2.4rem/1 var(--cf);color:var(--y)}
+.cd span{font-size:.75rem;color:var(--mut);text-transform:uppercase;letter-spacing:.1em}
+.pop{animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{0%{transform:scale(.5);opacity:0}100%{transform:none;opacity:1}}
+.peek{color:var(--y);font-weight:600}
+.bar{height:10px;border-radius:5px;background:rgba(255,255,255,.15);overflow:hidden;margin:6px 0 10px}.bar i{display:block;height:100%;background:var(--y);transition:width .4s}
+.it{display:flex;gap:10px;align-items:center;padding:9px 12px;margin-bottom:6px;border-radius:10px;background:rgba(0,0,0,.3);cursor:pointer}
+.it input{width:22px;height:22px;accent-color:var(--y);margin:0}
+.it.done span{text-decoration:line-through;opacity:.55}
+.it em{margin-left:auto;font-style:normal;color:var(--y);font-size:.8rem}
+.coin{width:92px;height:92px;border-radius:50%;margin:14px auto;display:grid;place-items:center;font-size:2.8rem;background:radial-gradient(circle at 35% 30%,#ffe27a,#c79100);box-shadow:0 6px 20px rgba(0,0,0,.4)}
+.coin.fl{animation:flip 1.2s ease-in-out}
+@keyframes flip{0%{transform:rotateY(0) translateY(0)}50%{transform:rotateY(1260deg) translateY(-80px)}100%{transform:rotateY(2520deg) translateY(0)}}
+#cr{text-align:center;font:800 1.9rem var(--cf);color:var(--y);min-height:2.2rem}
+.cf{position:fixed;top:-2rem;font-size:1.7rem;pointer-events:none;z-index:70;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--navy);padding:8px 16px;border-radius:99px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s;z-index:80}
+#toast.on{opacity:1}
+button:focus-visible{outline:3px solid var(--y);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<main>
+<h1>Painel da Viagem</h1>
+<p class="sub">Já saiu o destino? Organiza a partida, guarda segredo e faz a mala. <a href="index.html">← Roleta</a></p>
+
+<input id="dn" list="dl" placeholder="Destino (escolhe da lista)" autocomplete="off">
+<datalist id="dl"></datalist>
+<input id="dd" type="date" aria-label="Data de partida">
+<label class="ck"><input type="checkbox" id="sc"> 🔒 Destino secreto até ao dia da partida</label>
+<button class="btn y" id="sv">Guardar viagem</button>
+
+<div id="hero"></div>
+
+<h2>🧳 Checklist da mala</h2>
+<div id="pg" class="sub"></div><div class="bar"><i id="pb" style="width:0"></i></div>
+<div id="cl"></div>
+<div class="row"><button class="btn" id="crazy">Sortear item maluco 🎲</button></div>
+
+<h2>🪙 Desempate: moeda ao ar</h2>
+<div class="row"><input id="ca" placeholder="Opção A" style="flex:1"><input id="cb" placeholder="Opção B" style="flex:1"></div>
+<div class="coin" id="coin">🪙</div><div id="cr"></div>
+<button class="btn y" id="flip" style="width:100%">Ao ar! 🪙</button>
+</main>
+<div id="toast" role="status"></div>
+<script src="destinos.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const RM=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
+const pick=a=>a[Math.random()*a.length|0];
+const BYN=Object.fromEntries(D.map(d=>[d.n,d]));
+const IT={G:["Passaporte ou Cartão de Cidadão","Carregador e powerbank","Seguro de viagem","Cartões de embarque","Adaptador de tomada"],
+P:["Protetor solar","Chinelos","Toalha de praia","Óculos de sol","Fatos de banho"],C:["Sapatilhas confortáveis","Mapa offline","Casaco leve","Mochila pequena"],
+N:["Botas de caminhada","Repelente","Garrafa de água","Impermeável"],S:["Luvas e gorro","Roupa térmica","Protetor labial","Óculos de esqui"],
+K:["Sapatos para ruínas","Chapéu","Bilhetes de museus","Guia ou app offline"],E:["Vacinas em dia","Medicamentos básicos","Dinheiro local","Tradutor offline"]};
+const MAD=["Chapéu ridículo para todos","Bandeira de Portugal","Pastéis de nata de emergência","T-shirts iguais do grupo","Baralho de cartas","Colete refletor","Peruca colorida","Coluna de som (com juízo)"];
+let V={n:"",date:"",secret:false,rev:false,peek:false,chk:{},extra:[]};
+try{V=Object.assign(V,JSON.parse(localStorage.getItem("viagem")||"{}"));
+  const pre=localStorage.getItem("viagem-destino");if(pre&&BYN[pre]&&pre!==V.n){V=Object.assign(V,{n:pre,rev:false,peek:false,chk:{},extra:[]});localStorage.removeItem("viagem-destino")}}catch(e){}
+if(!BYN[V.n])V.n="";
+const save=()=>{try{localStorage.setItem("viagem",JSON.stringify(V))}catch(e){}};
+const toast=t=>{const e=$("#toast");e.textContent=t;e.classList.add("on");setTimeout(()=>e.classList.remove("on"),2000)};
+const target=()=>V.date?new Date(V.date+"T00:00:00").getTime():0;
+const hidden=()=>V.secret&&V.date&&!V.rev;
+$("#dl").innerHTML=D.map(d=>`<option value="${esc(d.n)}">`).join("");
+function confetti(){if(RM())return;for(let i=0;i<50;i++){const s=document.createElement("span");s.className="cf";s.textContent=pick(["🎉","✈️","🏖️","🎊","🌍","🥳"]);
+  s.style.left=Math.random()*100+"%";s.style.animationDuration=2.5+Math.random()*2.5+"s";document.body.appendChild(s);setTimeout(()=>s.remove(),5500)}}
+function cdHTML(){const t=target();if(!t)return"";const ms=t-Date.now();if(ms<=0)return`<div class="peek">🛫 É hoje! Boa viagem!</div>`;
+  const s=Math.floor(ms/1000),p=[["dias",Math.floor(s/86400)],["horas",Math.floor(s%86400/3600)],["min",Math.floor(s%3600/60)],["seg",s%60]];
+  return `<div class="cd">${p.map(([l,v])=>`<div><b>${String(v).padStart(2,"0")}</b><span>${l}</span></div>`).join("")}</div>`}
+function hero(){const h=$("#hero"),d=BYN[V.n];
+  if(!d){h.innerHTML=`<div class="big">🧭</div><p class="sub">Escolhe um destino acima ou sorteia um na <a href="mapa.html">roleta do globo</a>.</p>`;return}
+  if(hidden()){const ok=Date.now()>=target();
+    h.innerHTML=`<div class="big qm">🔒</div><div class="nm">Destino secreto</div><i>Só se revela no dia da partida.</i><div id="cd">${cdHTML()}</div><div class="row" style="justify-content:center"><button class="btn y" id="rv" ${ok?"":"disabled"}>Revelar</button><button class="btn" id="pk">Espreitar 👀</button></div>`;
+    $("#rv").onclick=()=>reveal(false);$("#pk").onclick=()=>{if(confirm("Quem espreita paga o primeiro jantar. Confirmas?"))reveal(true)};return}
+  h.innerHTML=`<div class="big">${d.f}</div><div class="nm">${esc(d.n)}</div><i>${esc(d.c)} · “${esc(d.s)}”</i>${V.peek?`<div class="peek">👀 Espreitou antes do tempo: paga o primeiro jantar!</div>`:""}<div id="cd">${cdHTML()}</div>${V.date?"":`<p class="sub">Define uma data para ver a contagem decrescente.</p>`}`}
+function reveal(p){V.rev=true;V.peek=p;save();render();$("#hero").classList.add("pop");confetti()}
+function list(){const d=BYN[V.n],base=hidden()||!d?IT.G:[...IT.G,...(IT[d.t]||[])];return [...base,...V.extra]}
+function checklist(){const L=list(),n=L.filter(i=>V.chk[i]).length;
+  $("#pg").textContent=n+" de "+L.length+" coisas na mala"+(hidden()?" (os itens do destino aparecem quando for revelado)":"");$("#pb").style.width=(L.length?n/L.length*100:0)+"%";
+  $("#cl").innerHTML=L.map((i,k)=>`<label class="it ${V.chk[i]?"done":""}"><input type="checkbox" data-k="${k}" ${V.chk[i]?"checked":""}><span>${esc(i)}</span>${V.extra.includes(i)?"<em>maluco</em>":""}</label>`).join("")}
+$("#cl").onchange=e=>{const i=list()[+e.target.dataset.k];if(i){V.chk[i]=e.target.checked;save();checklist()}};
+$("#crazy").onclick=()=>{const f=MAD.filter(i=>!V.extra.includes(i));if(!f.length)return toast("Já levas tudo, até o que não devias");const i=pick(f);V.extra.push(i);save();checklist();toast("Item obrigatório: "+i)};
+function render(){$("#dn").value=V.n;$("#dd").value=V.date;$("#sc").checked=V.secret;hero();checklist()}
+$("#sv").onclick=()=>{const n=$("#dn").value.trim(),d=BYN[n];if(!d){toast("Escolhe um destino da lista");return}
+  const ch=n!==V.n;V.n=n;V.date=$("#dd").value;V.secret=$("#sc").checked;if(V.secret&&!V.date){V.secret=false;toast("Define uma data para o segredo")}
+  if(ch){V.rev=false;V.peek=false;V.chk={};V.extra=[]}save();render();toast("Viagem guardada ✈️")};
+$("#flip").onclick=()=>{const a=$("#ca").value.trim()||"Cara",b=$("#cb").value.trim()||"Coroa",c=$("#coin");c.classList.remove("fl");void c.offsetWidth;c.classList.add("fl");$("#cr").textContent="";
+  setTimeout(()=>{$("#cr").textContent="🪙 "+pick([a,b])+" ganha!"},RM()?0:1250)};
+setInterval(()=>{const e=$("#cd");if(e){e.innerHTML=cdHTML();const r=$("#rv");if(r&&Date.now()>=target())r.disabled=false}},1000);
+render();
+</script>
+</body>
+</html>

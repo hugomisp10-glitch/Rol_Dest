@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quiz do Mundo</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Barlow:wght@400;600&display=swap">
+<style>
+:root{--bg:#1b3a8a;--ink:#f4efe0;--mut:#b9c6ee;--y:#ffc400;--ydk:#a87f00;--navy:#0c1a45;--ok:#2fbf71;--red:#ff4d4d;--cf:"Barlow Condensed","Arial Narrow",sans-serif;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d2159}}
+:root[data-theme="dark"]{--bg:#0d2159}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100vh;background:var(--bg) radial-gradient(circle,rgba(255,255,255,.09) 2px,transparent 3px) 0 0/28px 28px;color:var(--ink);font:400 16px/1.45 Barlow,system-ui,sans-serif}
+main{max-width:560px;margin:0 auto;padding:20px 14px 50px}
+h1{font:800 clamp(2.4rem,11vw,3.4rem)/.9 var(--cf);margin:0 0 6px;text-transform:uppercase}
+.sub{margin:0 0 14px;color:var(--mut)}
+a{color:var(--y);font-weight:600}
+.btn{font:600 1.1rem Barlow,sans-serif;color:var(--ink);background:rgba(0,0,0,.35);border:2px solid var(--mut);border-radius:14px;padding:14px 12px;cursor:pointer;text-align:center}
+.btn.y{background:var(--y);color:var(--navy);border-color:var(--y)}
+button.go{display:block;width:100%;font:800 2rem var(--cf);text-transform:uppercase;background:var(--y);color:var(--navy);border:0;border-radius:16px;padding:12px;box-shadow:0 6px 0 var(--ydk);cursor:pointer;margin:10px 0 14px}
+button.go:active{transform:translateY(4px);box-shadow:0 2px 0 var(--ydk)}
+.hud{display:flex;justify-content:space-between;font:800 1.2rem var(--cf);letter-spacing:.06em;color:var(--mut)}
+.bar{height:10px;border-radius:5px;background:rgba(255,255,255,.15);overflow:hidden;margin:6px 0 14px}.bar i{display:block;height:100%;background:var(--y);transition:width .4s}
+.q{padding:18px 14px;border-radius:18px;background:rgba(5,10,31,.72);border:3px solid var(--y);text-align:center;animation:pop .35s}
+.q .ic{font-size:3rem}
+.q h2{font:800 1.9rem/1.05 var(--cf);margin:6px 0 0}
+.who{text-align:center;font:800 1.5rem var(--cf);color:var(--y);margin:12px 0 4px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+.opts .btn.flag{font-size:2.6rem;padding:8px}
+.opts .ok{background:var(--ok);border-color:var(--ok);color:#06240f;animation:pop .35s}
+.opts .bad{background:var(--red);border-color:var(--red);color:#fff;animation:shake .35s}
+.fb{min-height:2.6rem;text-align:center;font-weight:600;color:var(--y)}
+@keyframes pop{0%{transform:scale(.85);opacity:0}100%{transform:none;opacity:1}}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.sc{display:flex;align-items:center;gap:10px;padding:10px 14px;margin-bottom:8px;border-radius:12px;background:rgba(0,0,0,.35);font-weight:600}
+.sc em{margin-left:auto;font:800 1.5rem var(--cf);font-style:normal;color:var(--y)}
+.sc.first{border:2px solid var(--y);background:rgba(255,196,0,.2)}
+.big{text-align:center;font:800 2.6rem/1 var(--cf);text-transform:uppercase;margin:8px 0}
+.row{display:flex;gap:8px}.row .btn{flex:1}
+.cf{position:fixed;top:-2rem;font-size:1.7rem;pointer-events:none;z-index:70;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--navy);padding:8px 16px;border-radius:99px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s;z-index:80}
+#toast.on{opacity:1}
+button:focus-visible,a:focus-visible{outline:3px solid var(--y);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<main>
+<p class="sub"><a href="index.html">← Início</a></p>
+<h1>🧠 Quiz do Mundo</h1>
+<div id="app"></div>
+</main>
+<div id="toast" role="status"></div>
+<script src="destinos.js"></script>
+<script src="coords.js"></script>
+<script src="missoes.js"></script>
+<script src="jogo.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+const RM=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
+const pick=a=>a[Math.random()*a.length|0];
+const sh=a=>[...a].sort(()=>Math.random()-.5);
+const RG={E:"Europa",A:"Ásia",M:"Américas",F:"África",O:"Oceânia"};
+const FL=new Map(D.map(d=>[d.c,d.f])),CS=[...FL.keys()];
+const N=10;
+let P,sc,stk,i,cur,best=0;
+try{best=+localStorage.getItem("quizbest")||0}catch(e){}
+const toast=t=>{const e=$("#toast");e.textContent=t;e.classList.add("on");setTimeout(()=>e.classList.remove("on"),1800)};
+function confetti(){if(RM())return;for(let k=0;k<45;k++){const s=document.createElement("span");s.className="cf";s.textContent=pick(["🎉","✈️","🌍","🎊","🥳","🧠"]);
+  s.style.left=Math.random()*100+"%";s.style.animationDuration=2.5+Math.random()*2.5+"s";document.body.appendChild(s);setTimeout(()=>s.remove(),5500)}}
+const opts=(ans,pool)=>sh([ans,...sh(pool.filter(x=>x!==ans)).slice(0,3)]);
+function mk(){const d=pick(D),t=Math.random()*5|0;
+  if(t===0)return{ic:"📍",q:"Em que país fica "+d.n+"?",a:d.c,o:opts(d.c,CS)};
+  if(t===1)return{ic:"🧭",q:"A que continente pertence "+d.n+"?",a:RG[d.r],o:opts(RG[d.r],Object.values(RG))};
+  if(t===2){const g=sh(D).slice(0,3),m=g.reduce((a,b)=>km(G(b))>km(G(a))?b:a);return{ic:"✈️",q:"Qual destes fica mais longe de Lisboa?",a:m.n,o:g.map(x=>x.n)}}
+  if(t===3)return{ic:"💬",q:"De que destino é esta frase? “"+d.s+"”",a:d.n,o:opts(d.n,D.map(x=>x.n))};
+  return{ic:"🏳️",q:"Qual é a bandeira de "+d.c+"?",a:d.f,o:opts(d.f,[...FL.values()]),flag:1}}
+function start(){const cr=crew();P=cr.length?cr:["Tu"];sc=Object.fromEntries(P.map(p=>[p,0]));stk=Object.fromEntries(P.map(p=>[p,0]));i=0;next()}
+function next(){if(i>=N)return end();cur=mk();const p=P[i%P.length];
+  $("#app").innerHTML=`<div class="hud"><span>PERGUNTA ${i+1}/${N}</span><span>${esc(p)}: ${sc[p]} pts</span></div><div class="bar"><i style="width:${i/N*100}%"></i></div>${P.length>1?`<div class="who">Vez de ${esc(p)}</div>`:""}<div class="q"><div class="ic">${cur.ic}</div><h2>${esc(cur.q)}</h2></div><div class="opts">${cur.o.map(o=>`<button class="btn ${cur.flag?"flag":""}" data-o="${esc(o)}">${esc(o)}</button>`).join("")}</div><div class="fb" id="fb"></div>`;
+  document.querySelectorAll("[data-o]").forEach(b=>b.onclick=()=>answer(b,p))}
+function answer(b,p){document.querySelectorAll("[data-o]").forEach(x=>{x.disabled=true;if(x.dataset.o===cur.a)x.classList.add("ok")});
+  const right=b.dataset.o===cur.a;
+  if(right){stk[p]++;const g=10+(stk[p]>=3?5:0);sc[p]+=g;$("#fb").textContent="✅ Certo! +"+g+" pts"+(stk[p]>=3?" (sequência "+stk[p]+" 🔥)":"")}
+  else{b.classList.add("bad");stk[p]=0;$("#fb").textContent="❌ Era: "+cur.a}
+  i++;const bt=document.createElement("button");bt.className="btn y";bt.style.cssText="display:block;width:100%;margin-top:8px";bt.textContent=i>=N?"Ver resultado 🏆":"Próxima ➡️";bt.onclick=next;$("#fb").appendChild(bt)}
+function end(){const r=Object.entries(sc).sort((a,b)=>b[1]-a[1]),top=r[0][1],tie=r.filter(x=>x[1]===top).length>1;
+  if(top>best){best=top;try{localStorage.setItem("quizbest",best)}catch(e){}}
+  confetti();
+  $("#app").innerHTML=`<div class="big">${P.length>1?(tie?"🤝 Empate!":"👑 "+esc(r[0][0])+" ganha!"):top>=100?"🏆 Mestre do Mundo!":top>=60?"🌍 Explorador!":"🛋️ Ainda és turista de sofá"}</div>${r.map(([n,p],k)=>`<div class="sc ${k===0?"first":""}"><span>${["🥇","🥈","🥉"][k]||"🏅"} ${esc(n)}</span><em>${p} pts</em></div>`).join("")}<p class="sub" style="text-align:center">Melhor pontuação deste telemóvel: ${best} pts</p><div class="row"><button class="btn y" id="ag">Jogar de novo 🔁</button><button class="btn" id="sh">Partilhar 📲</button></div>`;
+  $("#ag").onclick=start;
+  $("#sh").onclick=async()=>{const t="🧠 Quiz do Mundo: "+r.map(([n,p])=>n+" "+p+" pts").join(" · ")+"\nConseguem fazer melhor? 🌍";
+    try{if(navigator.share){await navigator.share({text:t});return}}catch(e){if(e&&e.name==="AbortError")return}
+    try{await navigator.clipboard.writeText(t);toast("Copiado! Cola no grupo")}catch(e){toast("Não deu para copiar")}}}
+$("#app").innerHTML=`<p class="sub">${N} perguntas de geografia com os destinos da roleta. Acertos seguidos dão pontos extra. Se preencheste “Quem vai?” noutra página, o quiz joga-se em grupo, por turnos.</p><p class="sub">🏅 Melhor pontuação: ${best} pts</p><button class="go" id="st">Começar</button>`;
+$("#st").onclick=start;
+</script>
+</body>
+</html>

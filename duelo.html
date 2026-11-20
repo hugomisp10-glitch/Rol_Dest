@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Duelo de Destinos</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Barlow:wght@400;600&display=swap">
+<style>
+:root{--bg:#1b3a8a;--ink:#f4efe0;--mut:#b9c6ee;--y:#ffc400;--ydk:#a87f00;--navy:#0c1a45;--red:#ff4d4d;--cf:"Barlow Condensed","Arial Narrow",sans-serif;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d2159}}
+:root[data-theme="dark"]{--bg:#0d2159}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100vh;background:var(--bg) radial-gradient(circle,rgba(255,255,255,.09) 2px,transparent 3px) 0 0/28px 28px;color:var(--ink);font:400 16px/1.45 Barlow,system-ui,sans-serif}
+main{max-width:560px;margin:0 auto;padding:20px 14px 50px}
+h1{font:800 clamp(2.4rem,11vw,3.4rem)/.9 var(--cf);margin:0 0 6px;text-transform:uppercase}
+.sub{margin:0 0 14px;color:var(--mut)}
+a{color:var(--y);font-weight:600}
+.btn{font:600 1.05rem Barlow,sans-serif;color:var(--ink);background:rgba(0,0,0,.35);border:2px solid var(--mut);border-radius:14px;padding:12px 14px;cursor:pointer;text-decoration:none;display:inline-block;text-align:center}
+.btn.y{background:var(--y);color:var(--navy);border-color:var(--y)}
+.btn:disabled{opacity:.45;cursor:default}
+button.go{display:block;width:100%;font:800 2rem var(--cf);text-transform:uppercase;background:var(--y);color:var(--navy);border:0;border-radius:16px;padding:12px;box-shadow:0 6px 0 var(--ydk);cursor:pointer;margin:10px 0 14px}
+button.go:active{transform:translateY(4px);box-shadow:0 2px 0 var(--ydk)}
+.duel{position:relative}
+.card{padding:14px;border-radius:18px;background:rgba(5,10,31,.72);border:3px solid rgba(255,255,255,.2);text-align:center;transition:all .3s}
+.card .k{font:800 1.1rem var(--cf);letter-spacing:.14em;color:var(--mut)}
+.card .fl{font-size:4.6rem;line-height:1}
+.card .nm{font:800 2.4rem/.95 var(--cf);text-transform:uppercase}
+.card i{display:block;color:var(--mut);margin:4px 0}
+.card.win{border-color:var(--y);box-shadow:0 0 0 5px rgba(255,196,0,.35),0 0 40px rgba(255,196,0,.5);animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
+.card.lose{opacity:.45;filter:grayscale(.8)}
+.vs{position:relative;z-index:2;margin:-12px auto;width:60px;height:60px;border-radius:50%;background:var(--red);color:#fff;font:800 1.7rem/60px var(--cf);text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.5);animation:bob 1.4s ease-in-out infinite}
+@keyframes bob{50%{transform:scale(1.12) rotate(6deg)}}
+@keyframes pop{0%{transform:scale(.85)}100%{transform:none}}
+.xray{margin:8px 0 0;padding:8px 10px;background:rgba(0,0,0,.28);border-radius:10px;text-align:left}
+.xt{font:800 1.1rem var(--cf);color:var(--y);margin-bottom:4px}
+.xr{display:grid;grid-template-columns:100px 1fr 48px;align-items:center;gap:8px;font-size:.88rem;margin:3px 0}.xr b{text-align:right}.xr s{opacity:.3;text-decoration:none}
+.bar{height:9px;background:rgba(255,255,255,.15);border-radius:5px;overflow:hidden}.bar i{display:block;height:100%;background:var(--y);margin:0}
+.votes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0 8px}
+.votes .btn{font:800 1.6rem var(--cf);padding:14px;text-transform:uppercase}
+#who{text-align:center;font:800 1.5rem var(--cf);color:var(--y);min-height:1.8rem}
+#res{margin-top:14px;text-align:center}
+.tally{display:flex;gap:8px;margin:10px 0}.tally div{flex:1;padding:10px;border-radius:12px;background:rgba(0,0,0,.35);font:800 2rem/1 var(--cf)}
+.tally small{display:block;font:400 .8rem Barlow;color:var(--mut)}
+.stp{margin:8px 0 0;font-weight:600;color:var(--y)}
+.row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.row .btn{flex:1 1 40%}
+.cf{position:fixed;top:-2rem;font-size:1.7rem;pointer-events:none;z-index:70;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--navy);padding:8px 16px;border-radius:99px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s;z-index:80}
+#toast.on{opacity:1}
+button:focus-visible,a:focus-visible{outline:3px solid var(--y);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<main>
+<p class="sub"><a href="index.html">← Início</a></p>
+<h1>⚔️ Duelo de Destinos</h1>
+<p class="sub">Dois destinos entram, só um sai. Cada amigo vota em segredo e o resultado só aparece no fim.</p>
+<button class="go" id="new">Novo duelo</button>
+<div class="duel" id="duel" hidden>
+<div class="card" id="ca"></div><div class="vs">VS</div><div class="card" id="cb"></div>
+<div id="who"></div>
+<div class="votes"><button class="btn y" id="va">Voto A</button><button class="btn y" id="vb">Voto B</button></div>
+<button class="btn" id="rv" style="width:100%" disabled>Revelar o vencedor 🥁</button>
+<div id="res" aria-live="polite"></div>
+</div>
+</main>
+<div id="toast" role="status"></div>
+<script src="destinos.js"></script>
+<script src="coords.js"></script>
+<script src="missoes.js"></script>
+<script src="jogo.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+const RM=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const pick=a=>a[Math.random()*a.length|0];
+let A,B,v,turn,done;
+const toast=t=>{const e=$("#toast");e.textContent=t;e.classList.add("on");setTimeout(()=>e.classList.remove("on"),1800)};
+function confetti(){if(RM())return;for(let i=0;i<45;i++){const s=document.createElement("span");s.className="cf";s.textContent=pick(["🎉","✈️","🏖️","🎊","🌍","🥳"]);
+  s.style.left=Math.random()*100+"%";s.style.animationDuration=2.5+Math.random()*2.5+"s";document.body.appendChild(s);setTimeout(()=>s.remove(),5500)}}
+const cardH=(d,k)=>`<div class="k">OPÇÃO ${k}</div><div class="fl">${d.f}</div><div class="nm">${esc(d.n)}</div><div>${esc(d.c)}</div><i>“${esc(d.s)}”</i><div>🎯 ${esc(MI[d.n]||"")}</div>${xray(d)}`;
+function newDuel(){
+  A=pick(D);do{B=pick(D)}while(B.n===A.n||B.c===A.c);
+  v={A:0,B:0};turn=0;done=false;
+  $("#ca").className=$("#cb").className="card";$("#ca").innerHTML=cardH(A,"A");$("#cb").innerHTML=cardH(B,"B");
+  $("#res").innerHTML="";$("#duel").hidden=false;$("#va").disabled=$("#vb").disabled=false;upd()}
+function upd(){const cr=crew(),n=v.A+v.B;
+  $("#who").textContent=done?"":cr.length&&n<cr.length?"Vez de "+cr[n]:n?n+" voto"+(n>1?"s":"")+" registado"+(n>1?"s":""):"Quem vota primeiro?";
+  $("#rv").disabled=done||(cr.length?n<cr.length:n<2)}
+function vote(k){if(done)return;v[k]++;navigator.vibrate&&navigator.vibrate(30);toast("Voto guardado em segredo 🤫");upd()}
+$("#va").onclick=()=>vote("A");$("#vb").onclick=()=>vote("B");$("#new").onclick=newDuel;
+$("#rv").onclick=async()=>{done=true;$("#va").disabled=$("#vb").disabled=$("#rv").disabled=true;$("#who").textContent="";
+  $("#res").innerHTML=`<div class="tally"><div>🥁</div></div>`;await sleep(RM()?100:1800);
+  let w,tie=v.A===v.B;if(tie){$("#res").innerHTML=`<p class="stp">Empate! Moeda ao ar 🪙</p>`;await sleep(RM()?100:1500);w=Math.random()<.5?"A":"B"}else w=v.A>v.B?"A":"B";
+  const W=w==="A"?A:B;$("#c"+w.toLowerCase()).classList.add("win");$("#c"+(w==="A"?"b":"a")).classList.add("lose");
+  $("#res").innerHTML=`<div class="tally"><div>${v.A}<small>votos em A</small></div><div>${v.B}<small>votos em B</small></div></div><p class="stp">🏆 ${tie?"A moeda escolheu":"Venceu"} ${W.f} ${esc(W.n)}!</p><div id="aw"></div><div class="row"><button class="btn y" id="ac">Aceitar missão ✅</button><a class="btn" id="pl" href="viagem.html">Planear viagem 🧳</a><button class="btn" id="sh">Partilhar 📲</button></div>`;
+  confetti();
+  $("#ac").onclick=()=>{$("#aw").innerHTML=award(W);$("#ac").disabled=true};
+  $("#pl").onclick=()=>{try{localStorage.setItem("viagem-destino",W.n)}catch(e){}};
+  $("#sh").onclick=async()=>{const t=`⚔️ Duelo de destinos: ${A.f} ${A.n} vs ${B.f} ${B.n}\n🏆 Venceu ${W.n} ${W.f} (${v.A} x ${v.B}${tie?", desempate à moeda":""})\n🎯 ${MI[W.n]}`;
+    try{if(navigator.share){await navigator.share({text:t});return}}catch(e){if(e&&e.name==="AbortError")return}
+    try{await navigator.clipboard.writeText(t);toast("Copiado! Cola no grupo")}catch(e){toast("Não deu para copiar")}}};
+newDuel();
+</script>
+</body>
+</html>

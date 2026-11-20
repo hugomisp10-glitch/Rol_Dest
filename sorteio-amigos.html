@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sorteio dos Amigos</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Barlow:wght@400;600&display=swap">
+<style>
+:root{--bg:#1b3a8a;--ink:#f4efe0;--mut:#b9c6ee;--y:#ffc400;--ydk:#a87f00;--navy:#0c1a45;--red:#ff4d4d;--cf:"Barlow Condensed","Arial Narrow",sans-serif;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d2159}}
+:root[data-theme="dark"]{--bg:#0d2159}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100vh;background:var(--bg) radial-gradient(circle,rgba(255,255,255,.09) 2px,transparent 3px) 0 0/28px 28px;color:var(--ink);font:400 16px/1.45 Barlow,system-ui,sans-serif}
+main{max-width:560px;margin:0 auto;padding:20px 14px 40px}
+h1{font:800 clamp(2.4rem,11vw,3.4rem)/.9 var(--cf);margin:0 0 6px;text-transform:uppercase}
+.sub{margin:0 0 16px;color:var(--mut)}
+a{color:var(--y);font-weight:600}
+.who{font:800 1.4rem var(--cf);letter-spacing:.12em;color:var(--mut);margin:6px 0 0}
+.who b{display:block;font-size:6.5rem;line-height:.85;color:var(--y);letter-spacing:0}
+input{width:100%;font:600 1.3rem Barlow,sans-serif;padding:16px 14px;border-radius:14px;border:3px solid var(--mut);background:rgba(0,0,0,.4);color:var(--ink);margin:0 0 12px}
+input:focus{outline:none;border-color:var(--y);box-shadow:0 0 0 4px rgba(255,196,0,.3)}
+.btn{font:600 1.05rem Barlow,sans-serif;color:var(--ink);background:rgba(0,0,0,.35);border:2px solid var(--mut);border-radius:14px;padding:13px 14px;cursor:pointer}
+.btn.y{background:var(--y);color:var(--navy);border-color:var(--y)}
+.btn.w{display:block;width:100%;margin-top:10px}
+button.go{display:block;width:100%;font:800 2.3rem var(--cf);text-transform:uppercase;background:var(--y);color:var(--navy);border:0;border-radius:16px;padding:14px;box-shadow:0 7px 0 var(--ydk);cursor:pointer;margin:6px 0 16px}
+button.go:active:not(:disabled){transform:translateY(5px);box-shadow:0 2px 0 var(--ydk)}
+button:disabled{opacity:.5;cursor:default}
+.seats{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 4px}
+.seat{width:46px;height:46px;border-radius:50%;background:var(--y);color:var(--navy);font:800 1.4rem/46px var(--cf);text-align:center;position:relative;animation:pop .4s ease-out}
+.seat::after{content:"🔒";position:absolute;right:-6px;bottom:-6px;font-size:.9rem;line-height:1}
+.hint{color:var(--y);font-weight:600;margin:10px 0 0}
+.cover{text-align:center;padding:24px 6px}
+.cover .big{font-size:6rem;line-height:1;animation:bob 1.2s ease-in-out infinite}
+.cover h2{font:800 2.8rem/.95 var(--cf);text-transform:uppercase;margin:8px 0}
+@keyframes bob{50%{transform:translateY(-10px) rotate(-6deg)}}
+/* ecrã de sorteio */
+#s2{position:fixed;inset:0;z-index:50;overflow:auto;background:radial-gradient(ellipse at 50% 25%,#2a4cab 0,#0a1640 55%,#050a1f 100%);padding:calc(14px + env(safe-area-inset-top,0px)) 14px calc(20px + env(safe-area-inset-bottom,0px));text-align:center}
+#s2[hidden]{display:none}
+#s2.win{background:radial-gradient(ellipse at 50% 30%,#ffd84d 0,#e09b00 45%,#4a2f00 100%)}
+.rays{position:fixed;inset:-60%;z-index:0;background:repeating-conic-gradient(rgba(255,255,255,.16) 0 9deg,transparent 9deg 18deg);animation:spin 24s linear infinite;pointer-events:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.in{position:relative;z-index:1;max-width:560px;margin:0 auto}
+.hud{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.hud .lbl{font:800 1.1rem var(--cf);letter-spacing:.14em;color:var(--mut);text-align:left}
+.hud .num{font:800 5.5rem/.8 var(--cf);color:var(--y);display:block}
+.dots{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;max-width:55%}
+.dots i{width:16px;height:16px;border-radius:50%;background:var(--y);box-shadow:0 0 10px var(--y);transition:all .4s}
+.dots i.x{background:#2b3558;box-shadow:none;transform:scale(.6)}
+#stage{min-height:340px;margin:16px 0 12px;display:flex;align-items:center;justify-content:center}
+.card{position:relative;width:100%;overflow:hidden;padding:22px 14px 18px;border-radius:20px;background:rgba(5,10,31,.72);border:3px solid rgba(255,255,255,.18);box-shadow:0 20px 50px rgba(0,0,0,.55)}
+.flag{font-size:6.8rem;line-height:1}
+.nm{font:800 clamp(2.6rem,13vw,3.8rem)/.95 var(--cf);text-transform:uppercase;margin:6px 0 8px}
+.card i{display:block;color:var(--mut);font-size:1.1rem}
+.roast{margin:10px 0 6px;font-weight:600;font-size:1.1rem}
+.card small{color:var(--mut)}
+.slam{animation:slam .45s cubic-bezier(.2,1.6,.4,1)}
+.slam .flag{animation:gray 1s .6s forwards}
+@keyframes slam{0%{transform:scale(2.4) rotate(-6deg);opacity:0}100%{transform:none;opacity:1}}
+@keyframes gray{to{filter:grayscale(1) brightness(.6)}}
+.stamp{position:absolute;top:34%;left:50%;transform:translate(-50%,-50%) rotate(-13deg);border:6px solid var(--red);color:var(--red);font:800 clamp(2.4rem,12vw,3.4rem) var(--cf);letter-spacing:.06em;padding:0 14px;border-radius:8px;background:rgba(5,10,31,.6);animation:stampIn .3s .45s both}
+@keyframes stampIn{0%{transform:translate(-50%,-50%) rotate(-13deg) scale(3);opacity:0}100%{transform:translate(-50%,-50%) rotate(-13deg);opacity:1}}
+.shake{animation:shake .4s .4s}
+@keyframes shake{20%{transform:translate(-8px,4px)}40%{transform:translate(8px,-5px)}60%{transform:translate(-5px,3px)}80%{transform:translate(4px,-2px)}}
+.count{font:800 9rem/1 var(--cf);color:var(--y);animation:slam .5s}
+.card.w{background:rgba(10,15,40,.88);border-color:var(--y);box-shadow:0 0 0 6px rgba(255,196,0,.35),0 0 60px rgba(255,196,0,.7);animation:slam .6s cubic-bezier(.2,1.6,.4,1)}
+.trophy{font-size:3.6rem;line-height:1;animation:bob 1.1s ease-in-out infinite}
+.kick{font:800 1.3rem var(--cf);letter-spacing:.16em;color:var(--y)}
+.card.w .flag{font-size:8.5rem}
+.card.w .nm{font-size:clamp(3rem,15vw,4.4rem);color:var(--y)}
+#log{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin:0 0 10px}
+#log span{flex:none;padding:4px 11px;border-radius:99px;background:rgba(0,0,0,.4);color:var(--mut);text-decoration:line-through;text-decoration-color:var(--red);font-size:.9rem}
+.acts{display:flex;flex-wrap:wrap;gap:10px}.acts .btn{flex:1 1 40%}
+#s2.win .btn{background:var(--navy);border-color:var(--navy)}
+#flash{position:fixed;inset:0;z-index:60;pointer-events:none;opacity:0}
+#flash.f-r{background:var(--red);animation:fl .35s}
+#flash.f-y{background:#fff;animation:fl .6s}
+@keyframes fl{0%{opacity:.55}100%{opacity:0}}
+@keyframes pop{0%{transform:scale(.4);opacity:0}100%{transform:none;opacity:1}}
+.cf{position:fixed;top:-2rem;font-size:1.8rem;pointer-events:none;z-index:70;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--navy);padding:8px 16px;border-radius:99px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s;z-index:80}
+#toast.on{opacity:1}
+button:focus-visible{outline:3px solid var(--y);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+<h1>Sorteio dos Amigos</h1>
+<p class="sub">Passem o telemóvel: cada um escreve o seu destino em segredo. Depois, vai-se eliminando até sobrar um. <a href="index.html">← Início</a></p>
+
+<section id="s1">
+<div class="seats" id="seats"></div>
+<div class="who">JOGADOR<b id="num">1</b></div>
+<input id="p" placeholder="O teu nome" autocomplete="off">
+<input id="d" list="dl" placeholder="O teu destino de sonho" autocomplete="off">
+<datalist id="dl"></datalist>
+<button class="go" id="save">Guardar em segredo 🤫</button>
+<p class="hint" id="cnt"></p>
+</section>
+
+<section id="cover" hidden>
+<div class="cover"><div class="big">🔒</div><h2>Guardado em segredo!</h2><p class="sub">Esconde o ecrã e passa o telemóvel ao próximo amigo.</p>
+<button class="go" id="next">Sou o próximo 📱</button>
+<button class="btn y w" id="start">Somos todos: começar o sorteio 🎲</button>
+<button class="btn w" id="fix">↩ Corrigir a minha sugestão</button></div>
+</section>
+</main>
+
+<section id="s2" hidden>
+<div class="rays" id="rays" hidden></div>
+<div class="in">
+<div class="hud"><div class="lbl">RESTAM<span class="num" id="left">0</span></div><div class="dots" id="dots"></div></div>
+<div id="stage" aria-live="polite"></div>
+<div id="log"></div>
+<button class="btn w" id="fast">Acelerar ⏩</button>
+<div class="acts" id="acts" hidden><button class="btn" id="share">Partilhar 📲</button><button class="btn" id="again">Repetir 🔁</button><button class="btn" id="back">Novo sorteio</button></div>
+</div>
+</section>
+<div id="flash"></div>
+<div id="toast" role="status"></div>
+<script src="destinos.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const RM=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const ROAST=["Foi bom enquanto durou, {P}.","{P}, o destino não te ama.","Adeus, sonho de {P}.","{P} vai ter de aguentar o grupo a gozar.","Ouve-se o silêncio. E {P} a suspirar.","{P} já pode fingir que nunca sugeriu isto."];
+const PR=["{P} é o Guia Oficial: escolhe o restaurante do primeiro jantar.","{P} cria o grupo de WhatsApp da viagem e lembra toda a gente do passaporte.","{P} leva a culpa se chover.","{P} recebe uma ronda de aplausos. Os outros pagam o café.","Se correr bem, foi de todos. Se correr mal, foi de {P}.","{P} fica a tratar das fotos de grupo. Sem desculpas."];
+const pick=a=>a[Math.random()*a.length|0];
+let E=[],fast=false,res=null;
+try{E=JSON.parse(localStorage.getItem("sorteio-fisico")||"[]")}catch(e){}
+const save=()=>{try{localStorage.setItem("sorteio-fisico",JSON.stringify(E))}catch(e){}};
+const find=n=>D.find(d=>norm(d.n)===norm(n));
+const show=id=>["s1","cover","s2"].forEach(x=>$("#"+x).hidden=x!==id);
+const join=a=>a.length>1?a.slice(0,-1).join(", ")+" e "+a[a.length-1]:a[0];
+const toast=t=>{const e=$("#toast");e.textContent=t;e.classList.add("on");setTimeout(()=>e.classList.remove("on"),1800)};
+$("#dl").innerHTML=D.map(d=>`<option value="${esc(d.n)}">`).join("");
+function count(){
+  $("#num").textContent=E.length+1;
+  $("#seats").innerHTML=E.map(e=>`<div class="seat" title="${esc(e.p)}">${esc(e.p.charAt(0).toUpperCase())}</div>`).join("");
+  $("#cnt").textContent=E.length?"🤫 "+E.length+(E.length===1?" sugestão guardada":" sugestões guardadas")+". Ninguém sabe quais.":"Ainda ninguém sugeriu."}
+$("#save").onclick=()=>{const p=$("#p").value.trim(),d=$("#d").value.trim();
+  if(!p||!d){toast("Falta o nome ou o destino");return}
+  const f=find(d);E.push({p,d:f?f.n:d});save();$("#p").value=$("#d").value="";count();
+  $("#start").disabled=E.length<2;show("cover")};
+$("#next").onclick=()=>{show("s1");$("#p").focus()};
+$("#fix").onclick=()=>{const l=E.pop();if(l){$("#p").value=l.p;$("#d").value=l.d;save();count()}show("s1")};
+$("#start").onclick=run;$("#again").onclick=run;
+$("#back").onclick=()=>{if(confirm("Apagar tudo e começar um novo sorteio?")){E=[];save();count();show("s1")}};
+$("#fast").onclick=()=>{fast=true;$("#fast").disabled=true};
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+function confetti(){if(RM())return;for(let i=0;i<60;i++){const s=document.createElement("span");s.className="cf";s.textContent=pick(["🎉","✈️","🏖️","🎊","🌍","🥳","⭐"]);
+  s.style.left=Math.random()*100+"%";s.style.animationDuration=2.5+Math.random()*2.5+"s";document.body.appendChild(s);setTimeout(()=>s.remove(),5500)}}
+function flash(c){const f=$("#flash");f.className="";void f.offsetWidth;f.className="f-"+c}
+const stage=h=>{$("#stage").innerHTML=h};
+const hud=(left,total)=>{$("#left").textContent=left;$("#dots").innerHTML=Array.from({length:total},(_,i)=>`<i class="${i>=left?"x":""}"></i>`).join("")};
+async function run(){
+  if(E.length<2)return;
+  show("s2");fast=false;$("#fast").disabled=false;$("#fast").hidden=false;$("#acts").hidden=true;$("#log").innerHTML="";$("#s2").className="";$("#rays").hidden=true;
+  const g={};E.forEach(e=>{const k=norm(e.d);(g[k]=g[k]||{name:e.d,who:[]}).who.push(e.p)});
+  const wk=norm(pick(E).d),order=shuffle(Object.keys(g).filter(k=>k!==wk)),n=order.length,total=n+1;
+  hud(total,total);
+  for(const c of ["3","2","1"]){stage(`<div class="count">${c}</div>`);await sleep(fast||RM()?250:850)}
+  for(let i=0;i<n;i++){
+    const x=g[order[i]],d=find(x.name),P=join(x.who),left=n-i;
+    flash("r");hud(left,total);
+    stage(`<div class="card slam shake"><div class="flag">${d?d.f:"📍"}</div><div class="nm">${esc(x.name)}</div>${d?`<i>“${esc(d.s)}”</i>`:""}<p class="roast">${esc(pick(ROAST).replace("{P}",P))}</p><small>Sugerido por ${esc(P)}</small><div class="stamp">ELIMINADO</div></div>`);
+    $("#log").insertAdjacentHTML("afterbegin",`<span>${d?d.f:"📍"} ${esc(x.name)}</span>`);
+    await sleep(fast?900:(left<=2?4200:3000))}
+  if(n){stage(`<div class="count" style="font-size:3.4rem">🥁 E o vencedor é...</div>`);await sleep(fast?600:2200)}
+  const x=g[wk],d=find(x.name),P=join(x.who),pr=pick(PR).replace("{P}",P);
+  hud(1,total);flash("y");$("#s2").className="win";$("#rays").hidden=false;
+  stage(`<div class="card w"><div class="trophy">🏆</div><div class="kick">O GRANDE VENCEDOR</div><div class="flag">${d?d.f:"📍"}</div><div class="nm">${esc(x.name)}</div>${d?`<i>“${esc(d.s)}”</i>`:""}<p class="roast">${esc(pr)}</p><small>Sugerido por ${esc(P)}${x.who.length>1?" ("+x.who.length+" bilhetes)":""}</small></div>`);
+  res={name:x.name,flag:d?d.f:"📍",s:d?d.s:"",P,pr,out:order.map(k=>g[k].name)};
+  confetti();$("#acts").hidden=false;$("#fast").hidden=true}
+$("#share").onclick=async()=>{if(!res)return;
+  const txt=`🏆 Sorteio dos amigos: ${res.name} ${res.flag}\n${res.s?"“"+res.s+"”\n":""}Sugerido por ${res.P}. ${res.pr}\nEliminados, por ordem: ${res.out.join(", ")||"ninguém, foi unanimidade!"}\n✈️`;
+  try{if(navigator.share){await navigator.share({text:txt});return}}catch(e){if(e&&e.name==="AbortError")return}
+  try{await navigator.clipboard.writeText(txt);toast("Copiado! Cola no grupo")}
+  catch(e){const a=document.createElement("textarea");a.value=txt;document.body.appendChild(a);a.select();try{document.execCommand("copy");toast("Copiado! Cola no grupo")}catch(_){toast("Não deu para copiar")}a.remove()}};
+count();$("#start").disabled=E.length<2;
+</script>
+</body>
+</html>

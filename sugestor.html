@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pede ao Destino</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Barlow:wght@400;600&display=swap">
+<style>
+:root{--bg:#1b3a8a;--ink:#f4efe0;--mut:#b9c6ee;--y:#ffc400;--ydk:#a87f00;--navy:#0c1a45;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d2159}}
+:root[data-theme="dark"]{--bg:#0d2159}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100vh;background:var(--bg) radial-gradient(circle,rgba(255,255,255,.09) 2px,transparent 3px) 0 0/28px 28px;color:var(--ink);font:400 16px/1.45 Barlow,system-ui,sans-serif}
+main{max-width:560px;margin:0 auto;padding:20px 14px 40px}
+h1{font:800 clamp(2.2rem,10vw,3.2rem)/.95 "Barlow Condensed","Arial Narrow",sans-serif;margin:0 0 6px}
+.sub{margin:0 0 14px;color:var(--mut)}
+a{color:var(--y);font-weight:600}
+textarea{width:100%;font:400 1.1rem/1.4 Barlow,sans-serif;padding:12px;border-radius:12px;border:2px solid var(--mut);background:rgba(0,0,0,.35);color:var(--ink);resize:vertical}
+textarea:focus{outline:3px solid var(--y);border-color:var(--y)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.chips button{font:600 .9rem Barlow,sans-serif;color:var(--ink);background:transparent;border:2px solid var(--mut);border-radius:99px;padding:5px 12px;cursor:pointer}
+button.go{display:block;width:100%;font:800 2rem "Barlow Condensed","Arial Narrow",sans-serif;background:var(--y);color:var(--navy);border:0;border-radius:14px;padding:10px;box-shadow:0 6px 0 var(--ydk);cursor:pointer;margin:8px 0 14px}
+button.go:active{transform:translateY(4px);box-shadow:0 2px 0 var(--ydk)}
+#note{color:var(--y);font-weight:600;margin:0 0 10px;min-height:1.4em}
+ol{list-style:none;padding:0;margin:0 0 12px}
+li{display:flex;gap:10px;align-items:flex-start;background:rgba(0,0,0,.3);border-radius:12px;padding:10px 12px;margin-bottom:8px;border:2px solid transparent}
+li.hl{border-color:var(--y);background:rgba(255,196,0,.2)}
+.n{font:800 1.6rem/1 "Barlow Condensed",sans-serif;color:var(--y);min-width:1.6em}
+.fl{font-size:1.8rem;line-height:1}
+.tag{display:inline-block;background:var(--ink);color:var(--navy);border-radius:99px;padding:0 9px;font-size:.8rem;font-weight:600;margin-left:4px}
+li i{color:var(--mut)}
+.acts{display:flex;flex-wrap:wrap;gap:10px}
+.acts button{flex:1 1 40%;font:600 1rem Barlow,sans-serif;color:var(--ink);background:rgba(0,0,0,.3);border:2px solid var(--mut);border-radius:12px;padding:10px;cursor:pointer}
+#win{margin-top:14px;padding:12px;border-left:4px solid var(--y);background:rgba(0,0,0,.3);border-radius:0 10px 10px 0;font-size:1.15rem}
+#win:empty{display:none}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--navy);padding:8px 16px;border-radius:99px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.on{opacity:1}
+button:focus-visible{outline:3px solid var(--y);outline-offset:2px}
+</style>
+</head>
+<body>
+<main>
+<h1>Pede ao Destino</h1>
+<p class="sub">Descreve a viagem e eu sugiro destinos. <a href="index.html">← Início</a></p>
+<textarea id="q" rows="3" placeholder="Ex.: quero ir para uma praia na Europa com um grupo de amigos"></textarea>
+<div class="chips" id="ex"></div>
+<button class="go" id="go">SUGERIR 🔎</button>
+<p id="note"></p>
+<ol id="res"></ol>
+<div class="acts" id="acts" hidden><button id="more">Outras sugestões ✨</button><button id="pick">Sortear 1 destas 🎲</button><button id="copy">Copiar lista 📲</button></div>
+<div id="win" aria-live="polite"></div>
+</main>
+<div id="toast" role="status"></div>
+<script src="destinos.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+const TY={P:"🏖️ Praia",C:"🏙️ Cidade",N:"🌿 Natureza",S:"⛷️ Neve",K:"🏛️ Cultura",E:"🌴 Exótico"};
+const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+const KT={P:/praia|\bmar\b|\bsol\b|banho|areia|\bilha/,C:/cidade|city|compras|gastronomia|restaurante|urban/,N:/naturez|montanha|trilho|caminhada|safari|paisage|vulcao|lago|animais|cascata/,S:/neve|esqui|ski|snowboard|inverno/,K:/cultura|historia|museu|monumento|templo|ruina|arte\b|patrimonio/,E:/exotic|diferente|paraiso|fim do mundo|aventura|surpreend/};
+const KR={E:/europ/,A:/\basia|asiatic|oriente/,M:/americ|caribe|caraibas/,F:/africa/,O:/oceania|australia/,PT:/portugal|nacional|ca dentro/};
+const S=x=>new Set(x.split(","));
+const PARTY=S("Ibiza,Maiorca,Mykonos,Cancún,Punta Cana,Berlim,Amesterdão,Praga,Budapeste,Barcelona,Dublin,Las Vegas,Bangkok,Phuket,Rio de Janeiro,Buenos Aires,Marbella,Zante,Hvar,Ilha do Sal,Nova Orleães,Miami,Cidade do México,Belgrado,Sófia,Ericeira,Lagos,Algarve,Londres,Manchester,Tulum,Medellín,São Paulo,Gran Canaria");
+const ROM=S("Santorini,Maldivas,Veneza,Paris,Bora Bora,Maurícias,Seychelles,Amalfi,Capri,Florença,Bruges,Kyoto,Bali,Lago de Como,Toscana,Viena,Dubrovnik,Sintra,Milos,Polinésia,Tulum");
+const CHEAP=S("Vietname,Tailândia,Indonésia,Bulgária,Roménia,Sérvia,Polónia,Hungria,Chéquia,Marrocos,Egito,Tunísia,Geórgia,Turquia,Sri Lanka,Nepal,Laos,Camboja,Cabo Verde,Letónia,Estónia,Lituânia,Portugal,Colômbia,Peru,Bolívia,Filipinas,Índia,Montenegro,Quirguistão,Uzbequistão");
+const NEARC=S("Marrocos,Tunísia,Cabo Verde");
+const EX=["Praia na Europa com um grupo de amigos","Festa e noite, barato, 8 destinos","Neve para esquiar com os amigos","Algo exótico e aventureiro na Ásia","Escapadinha romântica, cidade e cultura","Natureza e trilhos, longe de tudo"];
+let p,seen=new Set(),shown=[],qtxt="";
+function parse(t){const x=norm(t),o={types:new Set(),reg:new Set(),n:10};
+  for(const k in KT)if(KT[k].test(x))o.types.add(k);
+  for(const k in KR)if(KR[k].test(x))o.reg.add(k);
+  o.party=/festa|noite|balada|loucur|despedida|animad/.test(x);o.rom=/romant|casal|lua de mel/.test(x);
+  o.cheap=/barat|economic|low cost|poupar|orcamento/.test(x);o.near=/perto|curta|escapadinha|fim de semana/.test(x);o.far=/longe|sonho|uma vez na vida/.test(x);
+  const m=x.match(/(\d+)\s*(destino|sugest|ideia|opc)/);if(m)o.n=Math.max(3,Math.min(20,+m[1]));
+  o.any=o.types.size||o.reg.size||o.party||o.rom||o.cheap||o.near||o.far;return o}
+const isNear=d=>d.r==="E"||NEARC.has(d.c),isFar=d=>!isNear(d);
+const regOk=d=>[...p.reg].some(k=>k==="PT"?d.c==="Portugal":d.r===k);
+const sc=d=>Math.random()*3+(p.party&&PARTY.has(d.n)?5:0)+(p.rom&&ROM.has(d.n)?5:0)+(p.cheap&&CHEAP.has(d.c)?4:0)-(seen.has(d.n)?100:0);
+const rank=a=>a.map(d=>[sc(d),d]).sort((a,b)=>b[0]-a[0]).map(x=>x[1]);
+function suggest(){
+  const tOk=d=>!p.types.size||p.types.has(d.t);
+  const strict=D.filter(d=>tOk(d)&&(!p.reg.size||regOk(d))&&(!p.near||isNear(d))&&(!p.far||isFar(d)));
+  let out=rank(strict),note="";
+  if(!p.any)note="Não percebi o estilo, por isso atirei às cegas 🎯";
+  if(out.length<p.n){const ids=new Set(out.map(d=>d.n));out=out.concat(rank(D.filter(d=>tOk(d)&&!ids.has(d.n))));note="Só encontrei "+strict.length+" destinos exatos, completei com parecidos.";}
+  if(out.length<p.n)out=out.concat(rank(D.filter(d=>!out.includes(d))));
+  shown=out.slice(0,p.n);shown.forEach(d=>seen.add(d.n));
+  if(shown.every(d=>seen.has(d.n))&&seen.size>=D.length)seen.clear();
+  $("#note").textContent=note;$("#win").textContent="";
+  $("#res").innerHTML=shown.map((d,i)=>`<li><span class="n">${i+1}</span><span class="fl">${d.f}</span><div><b>${d.n}</b> · ${d.c}<span class="tag">${TY[d.t]}</span><br><i>“${d.s}”</i></div></li>`).join("");
+  $("#acts").hidden=false}
+function run(fresh){const t=$("#q").value.trim();if(!t){$("#note").textContent="Escreve o que procuras 🙂";return}
+  if(fresh||t!==qtxt){seen=new Set();qtxt=t}p=parse(t);suggest()}
+$("#go").onclick=()=>run(true);$("#more").onclick=()=>run(false);
+EX.forEach(t=>{const b=document.createElement("button");b.textContent=t;b.onclick=()=>{$("#q").value=t;run(true)};$("#ex").appendChild(b)});
+$("#pick").onclick=()=>{const lis=[...document.querySelectorAll("#res li")],w=Math.random()*lis.length|0;let i=0,steps=RM()?0:16+w;
+  const go=()=>{lis.forEach(l=>l.classList.remove("hl"));const k=steps?i%lis.length:w;lis[k].classList.add("hl");
+    if(steps--<=0){const d=shown[w];$("#win").innerHTML=`O destino decidiu: <b>${d.n}</b> ${d.f}<br><i>“${d.s}”</i>`;return}
+    i++;setTimeout(go,60+(16-Math.max(steps,0))*14)};go()};
+const RM=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
+function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("on");setTimeout(()=>e.classList.remove("on"),1800)}
+$("#copy").onclick=async()=>{
+  const txt="🔎 Pedido ao Destino: “"+qtxt+"”\n"+shown.map((d,i)=>`${i+1}. ${d.n} ${d.f} (${d.c})`).join("\n")+"\nVotem! Quem vetar paga a primeira ronda ✈️";
+  try{if(navigator.share){await navigator.share({text:txt});return}}catch(e){if(e&&e.name==="AbortError")return}
+  try{await navigator.clipboard.writeText(txt);toast("Copiado! Cola no grupo")}
+  catch(e){const a=document.createElement("textarea");a.value=txt;document.body.appendChild(a);a.select();try{document.execCommand("copy");toast("Copiado! Cola no grupo")}catch(_){toast("Não deu para copiar")}a.remove()}};
+</script>
+</body>
+</html>
